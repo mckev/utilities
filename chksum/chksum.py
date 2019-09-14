@@ -6,14 +6,15 @@ chksum_filename = '.chksum'
 
 
 def sha256sum(file_path):
-    # Ref: https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
-    h = hashlib.sha256()
-    b = bytearray(128 * 1024)
-    mv = memoryview(b)
-    with open(file_path, 'rb', buffering=0) as f:
-        for n in iter(lambda: f.readinto(mv), 0):
-            h.update(mv[:n])
-    return h.hexdigest()
+    hash = hashlib.sha256()
+    with open(file_path, mode='rb') as f:
+        while True:
+            data = f.read(128 * 1024)
+            if not data:
+                # Done
+                break
+            hash.update(data)
+    return hash.hexdigest()
 
 
 def retrieve_file_properties(file_path):
@@ -24,7 +25,7 @@ def retrieve_file_properties(file_path):
     file_mtime_datetime_str = file_mtime_datetime.isoformat()
 
     file_sha256sum = sha256sum(file_path)
-    # file_name = os.path.basename(file_path)
+    file_name = os.path.basename(file_path)
     return file_size, file_mtime_datetime_str, file_sha256sum
 
 
