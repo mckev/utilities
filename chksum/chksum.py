@@ -114,17 +114,21 @@ def report_diff(root, past_contents, current_contents):
 def main():
     excluded_dir_names = ['$RECYCLE.BIN', 'found.000', 'Recovery', 'System Volume Information']
     for root, dir_names, file_names in os.walk(os.getcwd()):
-        print(f'Processing {root}')
         dir_names[:] = [dir_name for dir_name in dir_names if dir_name not in excluded_dir_names]
-        chksum_path = os.path.join(root, chksum_filename)
-        if os.path.exists(chksum_path):
-            past_chksum_contents = read_chksum_file(chksum_path=chksum_path)
-        else:
-            past_chksum_contents = []
-        current_chksum_contents = generate_chksum_contents(root, dir_names, file_names)
-        if current_chksum_contents != past_chksum_contents:
-            report_diff(root, past_chksum_contents, current_chksum_contents)
-            write_chksum_file(chksum_contents=current_chksum_contents, chksum_path=chksum_path)
+        try:
+            # In Windows when redirecting STDOUT into a file, sometimes printing throws following error "UnicodeEncodeError: 'charmap' codec can't encode characters in position 138-141: character maps to <undefined>"
+            print(f'Processing {root}')
+            chksum_path = os.path.join(root, chksum_filename)
+            if os.path.exists(chksum_path):
+                past_chksum_contents = read_chksum_file(chksum_path=chksum_path)
+            else:
+                past_chksum_contents = []
+            current_chksum_contents = generate_chksum_contents(root, dir_names, file_names)
+            if current_chksum_contents != past_chksum_contents:
+                report_diff(root, past_chksum_contents, current_chksum_contents)
+                write_chksum_file(chksum_contents=current_chksum_contents, chksum_path=chksum_path)
+        except Exception as e:
+            print(f'Error while processing: {e}')
 
 
 main()
