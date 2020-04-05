@@ -99,36 +99,40 @@ def write_chksum_file(chksum_contents, chksum_path):
         print(f'Unable to write checksum file {chksum_path}: {ex}')
 
 
-def report_diff(root, past_contents, current_contents):
+def report_diff(log_file, root, past_contents, current_contents):
     past_contents = {content['name']: content for content in past_contents}
     current_contents = {content['name']: content for content in current_contents}
     for name in sorted(set(current_contents.keys()) - set(past_contents.keys())):
-        print(f'{root}: Added: {current_contents[name]}')
+        log_file.write(f'{root}: Added: {current_contents[name]}\n')
     for name in sorted(set(past_contents.keys()) - set(current_contents.keys())):
-        print(f'{root}: Deleted: {past_contents[name]}')
+        log_file.write(f'{root}: Deleted: {past_contents[name]}\n')
     for name in sorted(set(past_contents.keys()) & set(current_contents.keys())):
         if past_contents[name] != current_contents[name]:
-            print(f'{root}: Changed: {past_contents[name]}   ->   {current_contents[name]}')
+            log_file.write(f'{root}: Changed: {past_contents[name]}   ->   {current_contents[name]}\n')
 
 
 def main():
     excluded_dir_names = ['$RECYCLE.BIN', 'found.000', 'Recovery', 'System Volume Information']
-    for root, dir_names, file_names in os.walk(os.getcwd()):
-        dir_names[:] = [dir_name for dir_name in dir_names if dir_name not in excluded_dir_names]
-        try:
-            # In Windows when redirecting STDOUT into a file, sometimes printing throws following error "UnicodeEncodeError: 'charmap' codec can't encode characters in position 138-141: character maps to <undefined>"
-            print(f'Processing {root}')
-            chksum_path = os.path.join(root, chksum_filename)
-            if os.path.exists(chksum_path):
-                past_chksum_contents = read_chksum_file(chksum_path=chksum_path)
-            else:
-                past_chksum_contents = []
-            current_chksum_contents = generate_chksum_contents(root, dir_names, file_names)
-            if current_chksum_contents != past_chksum_contents:
-                report_diff(root, past_chksum_contents, current_chksum_contents)
-                write_chksum_file(chksum_contents=current_chksum_contents, chksum_path=chksum_path)
-        except Exception as e:
-            print(f'Error while processing: {e}')
+    datetime_now = datetime.datetime.now()
+    log_filename = 'chksum_' + datetime_now.strftime("%Y%m%d_%H%M%S") + '.log'
+    print(f'Writing detailed log into {log_filename}...')
+    with open(log_filename, mode='wt', encoding='utf-8') as log_file:
+        for root, dir_names, file_names in os.walk(os.getcwd()):
+            dir_names[:] = [dir_name for dir_name in dir_names if dir_name not in excluded_dir_names]
+            try:
+                # In Windows when redirecting STDOUT into a file, sometimes printing throws following error "UnicodeEncodeError: 'charmap' codec can't encode characters in position 138-141: character maps to <undefined>"
+                log_file.write(f'Processing {root}\n')
+                chksum_path = os.path.join(root, chksum_filename)
+                if os.path.exists(chksum_path):
+                    past_chksum_contents = read_chksum_file(chksum_path=chksum_path)
+                else:
+                    past_chksum_contents = []
+                current_chksum_contents = generate_chksum_contents(root, dir_names, file_names)
+                if current_chksum_contents != past_chksum_contents:
+                    report_diff(log_file, root, past_chksum_contents, current_chksum_contents)
+                    write_chksum_file(chksum_contents=current_chksum_contents, chksum_path=chksum_path)
+            except Exception as e:
+                print(f'Error while processing: {e}')
 
 
 main()
