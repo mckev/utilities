@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import os
+import sys
 
 chksum_filename = '.chksum'
 
@@ -122,6 +123,7 @@ def main():
             try:
                 # In Windows when redirecting STDOUT into a file, sometimes printing throws following error "UnicodeEncodeError: 'charmap' codec can't encode characters in position 138-141: character maps to <undefined>"
                 log_file.write(f'Processing {root}\n')
+                sys.stdout.flush()
                 chksum_path = os.path.join(root, chksum_filename)
                 if os.path.exists(chksum_path):
                     past_chksum_contents = read_chksum_file(chksum_path=chksum_path)
