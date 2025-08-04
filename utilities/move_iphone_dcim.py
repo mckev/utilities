@@ -28,6 +28,11 @@ def main():
                 print(f'{filename} is a live photo of {filename_root}.HEIC')
                 move_file(filename, 'pictures/')
                 move_file(f'{filename_root}.HEIC', 'pictures/')
+            elif os.path.exists(f'{filename_root}.JPG'):
+                # Similarly, IMG_XXXX.MOV file that has accompany IMG_XXXX.JPG is a live photo
+                print(f'{filename} is a live photo of {filename_root}.JPG')
+                move_file(filename, 'pictures/')
+                move_file(f'{filename_root}.JPG', 'pictures/')
             else:
                 print(f'{filename} is a video')
                 move_file(filename, 'videos/')
@@ -37,7 +42,7 @@ def main():
 
     # Remaining IMG_*.HEIC files
     for filename in os.listdir('.'):
-        if filename.startswith('IMG_') and filename.endswith('.HEIC'):
+        if filename.startswith('IMG_') and (filename.endswith('.HEIC') or filename.endswith('.JPG')):
             print(f'{filename} is a picture')
             move_file(filename, 'pictures/')
 
