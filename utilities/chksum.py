@@ -21,8 +21,7 @@ def sha256sum(file_path):
 def retrieve_file_properties(file_path):
     file_stats = os.stat(file_path)
     file_size = file_stats.st_size
-    file_mtime_datetime_naive = datetime.datetime.utcfromtimestamp(file_stats.st_mtime)
-    file_mtime_datetime = file_mtime_datetime_naive.replace(tzinfo=datetime.timezone.utc)
+    file_mtime_datetime = datetime.datetime.fromtimestamp(file_stats.st_mtime, datetime.timezone.utc)
     file_mtime_datetime_str = file_mtime_datetime.isoformat()
 
     file_sha256sum = sha256sum(file_path)
